@@ -1,0 +1,88 @@
+.data
+msg1: .asciiz "Digite o primeiro ano: "
+msg2: .asciiz "Digite o segundo ano: "
+msg3: .asciiz "A diferença não pode ser maior que 1000. Digite novamente. "
+msg4: .asciiz "Anos não bissextos no intervalo: "
+
+.text
+main:
+    # Guarda o valor 0 em t5.
+    li $t5, 0
+
+    # Lê o primeiro ano.
+    li $v0, 4
+    la $a0, msg1
+    syscall
+
+    li $v0, 5
+    syscall
+    add $t0, $v0, $t5
+
+    # Lê o segundo ano.
+    li $v0, 4
+    la $a0, msg2
+    syscall
+
+    li $v0, 5
+    syscall
+    add $t1, $v0, $t5
+
+    # Se o primeiro for maior, troca os anos de lugar.
+    ble $t0, $t1, Conferir
+    add $t2, $t0, $t5
+    add $t0, $t1, $t5
+    add $t1, $t2, $t5
+
+Conferir:
+    # Confere a diferença entre os anos.
+    sub $t2, $t1, $t0
+    li $t3, 1000
+    bgt $t2, $t3, Erro
+
+    li $v0, 4
+    la $a0, msg4
+    syscall
+    j Enquanto
+
+Erro:
+    li $v0, 4
+    la $a0, msg3
+    syscall
+    j main
+
+Enquanto:
+    # Para quando passar do último ano.
+    bgt $t0, $t1, Fim
+
+    # Se não for divisivel por 4, escreve o ano.
+    li $t3, 4
+    rem $t4, $t0, $t3
+    bne $t4, $t5, Escreve
+
+    # Se divide por 4, mas não por 100, é bissexto.
+    li $t3, 100
+    rem $t4, $t0, $t3
+    bne $t4, $t5, Proximo
+
+    # Se tambem divide por 400, é bissexto.
+    li $t3, 400
+    rem $t4, $t0, $t3
+    beq $t4, $t5, Proximo
+
+Escreve:
+    # Escreve o ano que não é bissexto.
+    li $v0, 1
+    add $a0, $t0, $t5
+    syscall
+
+Proximo:
+    # Soma 1 para analisar o ano seguinte.
+    li $t3, 1
+    add $t0, $t0, $t3
+    j Enquanto
+
+Fim:
+    li $v0, 5
+    syscall
+
+
